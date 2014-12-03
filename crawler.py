@@ -5,9 +5,10 @@ import requests
 
 class Cralwer:
 
-    def __init__(self, url):
+    def __init__(self, url, session):
         self.url = url
         self.home_url = 'http://' + url + '/'
+        self.session = session
         self.crawl_queue = [self.home_url]
         self.visited = []
 
@@ -26,7 +27,7 @@ class Cralwer:
     def prepare_link(self, home_url, href):
         return urljoin(home_url, href)
 
-    def filter_links(base_url, all_links, visited):
+    def filter_links(self, base_url, all_links, visited):
         filtered_links = []
         for link in all_links:
             if base_url in link and link not in visited:
@@ -39,18 +40,23 @@ class Cralwer:
     def get_next_craw(self):
         return self.crawl_queue.pop()
 
-    def crawl(self, url):
+    def crawl(self, url, base_url):
+        print(url)
+        self.visited.append(url)
         a_tags = self.get_a_tags(url)
         all_hrefs = self.get_hrefs(a_tags)
         all_links = []
         for href in all_hrefs:
-            all_links.append(self.prepare_link(self.home_url, self.visited))
-        all_links = self.filtered_links(url, all_links, self.visited)
-        self.store_data(all_links)
+            all_links.append(self.prepare_link(self.home_url, href))
+        # print(all_links)
+        all_links = self.filter_links(base_url, all_links, self.visited)
+        #print(all_links)
+        #self.store_data(all_links)
         self.crawl_queue.extend(all_links)
 
     def start(self):
         while self.crawl_more():
             current_url = self.get_next_craw()
-            self.crawl(current_url)
+            self.crawl(current_url, self.url)
         return self.crawled_data
+        #self.crawl(self.get_next_craw())
