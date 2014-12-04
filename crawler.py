@@ -1,5 +1,5 @@
 from urllib.parse import urljoin
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Doctype
 import requests
 
 
@@ -12,10 +12,21 @@ class Cralwer:
         self.crawl_queue = [self.home_url]
         self.visited = []
 
-    def get_a_tags(self, home_url):
+    def get_beautiful_soup(self, home_url):
         r = requests.get(home_url)
         html = r.text
         soup = BeautifulSoup(html)
+        return soup
+
+    def soup_get_html_version(self, soup):
+        items = [item for item in soup.contents if isinstance(item, Doctype)]
+        if not items[0]:
+            return None
+        if items[0].lower() == 'doctype html':
+            return 'html5'
+        return 'html4'
+
+    def get_a_tags(self, soup):
         return soup.find_all('a', href=True)
 
     def get_hrefs(self, all_a_tags):
@@ -43,7 +54,9 @@ class Cralwer:
     def crawl(self, url, base_url):
         print(url)
         self.visited.append(url)
-        a_tags = self.get_a_tags(url)
+        #self.store_data(url)
+        soup = self.get_beautiful_soup(url)
+        a_tags = self.get_a_tags(soup)
         all_hrefs = self.get_hrefs(a_tags)
         all_links = []
         for href in all_hrefs:
@@ -51,7 +64,6 @@ class Cralwer:
         # print(all_links)
         all_links = self.filter_links(base_url, all_links, self.visited)
         #print(all_links)
-        #self.store_data(all_links)
         self.crawl_queue.extend(all_links)
 
     def start(self):
