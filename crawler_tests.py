@@ -18,5 +18,10 @@ class CrawerTests(unittest.TestCase):
     def test_soup_get_html_version(self):
         self.assertEqual(self.crawler.soup_get_html_version(self.soup), 'html5')
 
+    def test_soup_get_page_description(self):
+        print(self.crawler.soup_get_page_description(self.soup))
+
+    def test_soup_get_title(self):
+        print(self.crawler.soup_get_title(self.soup))
 if __name__ == '__main__':
     unittest.main()

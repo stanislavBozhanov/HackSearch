@@ -1,9 +1,15 @@
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup, Doctype
 import requests
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
+url = 'boredpanda.com'
+home_url = 'http://' + url + '/'
+engine = create_engine("sqlite:///hacksearch.db")
+session = Session(bind=engine)
 
-class Cralwer:
+class Cralwer():
 
     def __init__(self, url, session):
         self.url = url
@@ -18,13 +24,23 @@ class Cralwer:
         soup = BeautifulSoup(html)
         return soup
 
-    def soup_get_html_version(self, soup):
+    def soup_is_html_version_five(self, soup):
         items = [item for item in soup.contents if isinstance(item, Doctype)]
         if not items[0]:
             return None
         if items[0].lower() == 'doctype html':
-            return 'html5'
-        return 'html4'
+            return True
+        return False
+
+    def soup_get_page_description(self, soup):
+            desc = soup.findAll(attrs={"name": "description"})
+            return desc[0]['content']
+
+    def soup_get_title(self, soup):
+        return soup.title.string
+
+    def store_data(self, url):
+        pass
 
     def get_a_tags(self, soup):
         return soup.find_all('a', href=True)
@@ -72,3 +88,15 @@ class Cralwer:
             self.crawl(current_url, self.url)
         return self.crawled_data
         #self.crawl(self.get_next_craw())
+
+
+def main():
+    crawler = Cralwer(url, session)
+    soup = crawler.get_beautiful_soup(crawler.home_url)
+    if crawler.soup_is_html_version_five(soup)
+    print(crawler.soup_get_html_version(soup))
+    print(crawler.soup_get_title(soup))
+    print(crawler.soup_get_page_description(soup))
+
+if __name__ == '__main__':
+    main()
