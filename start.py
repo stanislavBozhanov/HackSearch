@@ -8,7 +8,7 @@ def main():
     engine = create_engine("sqlite:///hacksearch.db")
     session = Session(bind=engine)
     Base.metadata.create_all(engine)
-    pesho = Cralwer('www.mattcutts.com/blog', session)
+    pesho = Cralwer('www.mattcutts.com', session)
     pesho.start()
 
 if __name__ == '__main__':
