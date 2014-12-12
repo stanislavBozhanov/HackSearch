@@ -1,14 +1,7 @@
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup, Doctype
 import requests
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 from website import Website
-
-url = 'boredpanda.com'
-home_url = 'http://' + url + '/'
-engine = create_engine("sqlite:///hacksearch.db")
-session = Session(bind=engine)
 
 
 class Cralwer():
@@ -28,7 +21,7 @@ class Cralwer():
 
     def soup_is_html_version_five(self, soup):
         items = [item for item in soup.contents if isinstance(item, Doctype)]
-        if not items[0]:
+        if not items:
             return None
         if items[0].lower() == 'doctype html':
             return True
@@ -39,16 +32,20 @@ class Cralwer():
 
     def soup_get_page_description(self, soup):
             desc = soup.findAll(attrs={"name": "description"})
+            if not desc:
+                return "None"
             return desc[0]['content']
 
     def store_data(self, url):
         soup = self.get_beautiful_soup(url)
         title = self.soup_get_title(soup)
+        print(url)
+        print(title)
         html = 4
         if (self.soup_is_html_version_five(soup)):
             html = 5
         description = self.soup_get_page_description(soup)
-        data = Website(url, title, html, description)
+        data = Website(url=url, title=title, html_version=html, description=description)
         session.add(data)
         session.commit()
 
@@ -93,5 +90,3 @@ class Cralwer():
         while self.crawl_more():
             current_url = self.get_next_craw()
             self.crawl(current_url, self.url)
-        return self.crawled_data
-        #self.crawl(self.get_next_craw())
